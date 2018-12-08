@@ -10,7 +10,7 @@ import (
 )
 
 type point struct {
-	id int
+	id rune
 	x  int
 	y  int
 }
@@ -41,28 +41,51 @@ func main() {
 			return false
 		}
 	})
-	board := make([][]int, maxX-minX)
+	board := make([][]rune, maxX-minX)
 	for x := minX; x < maxX; x++ {
-		board[x-minX] = make([]int, maxY-minY)
+		board[x-minX] = make([]rune, maxY-minY)
 		for y := minY; y < maxY; y++ {
 			lastDistance := 10000
 			for _, el := range points {
 				dist := positiveDistance(x, el.x) + positiveDistance(y, el.y)
-				if dist < lastDistance {
+				if dist == 0 {
 					board[x-minX][y-minY] = el.id
+				} else if dist == lastDistance {
+					board[x-minX][y-minY] = '.'
+					// break
+				} else if dist < lastDistance {
+					board[x-minX][y-minY] = rune(int(el.id) + 32)
 					lastDistance = dist
 				}
 			}
 		}
 	}
-	fmt.Println(board)
+	maxMap := map[rune]int{}
+	for _, el := range board {
+		for _, i := range el {
+			_, ok := maxMap[i]
+			if ok {
+				maxMap[i]++
+			} else {
+				maxMap[i] = 1
+			}
+		}
+	}
+	maxV := 0
+	for k, v := range maxMap {
+		fmt.Printf("%c - %d\n", k, v)
+		if v > maxV {
+			maxV = v
+		}
+	}
+	fmt.Println(maxV)
 }
 
 func addPoint(line string, id int) {
 	parts := strings.Split(line, ",")
 	x, _ := strconv.Atoi(parts[0])
 	y, _ := strconv.Atoi(parts[1][1:])
-	points = append(points, &point{id, x, y})
+	points = append(points, &point{rune(65 + id), x, y})
 	if x > maxX {
 		maxX = x
 	}
