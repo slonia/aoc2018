@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
@@ -41,24 +42,42 @@ func main() {
 			return false
 		}
 	})
-	board := make([][]rune, maxX-minX)
-	for x := minX; x < maxX; x++ {
-		board[x-minX] = make([]rune, maxY-minY)
-		for y := minY; y < maxY; y++ {
-			lastDistance := 10000
+	fmt.Println(minX, maxX, minY, maxY)
+	board := make([][]rune, maxX-minX+1)
+	distances := make([][]int, maxX-minX+1)
+	for x := minX; x <= maxX; x++ {
+		board[x-minX] = make([]rune, maxY-minY+1)
+		distances[x-minX] = make([]int, maxY-minY+1)
+		for y := minY; y <= maxY; y++ {
+			distances[x-minX][y-minY] = 10000
 			for _, el := range points {
 				dist := positiveDistance(x, el.x) + positiveDistance(y, el.y)
+				// clear()
+				fmt.Printf("%c, %d %d %d\n", el.id, x, y, dist)
 				if dist == 0 {
 					board[x-minX][y-minY] = el.id
-				} else if dist == lastDistance {
+					distances[x-minX][y-minY] = 0
+					// fmt.Println("Case 1")
+					break
+				} else if dist == distances[x-minX][y-minY] {
 					board[x-minX][y-minY] = '.'
+					// fmt.Println("Case 2")
 					// break
-				} else if dist < lastDistance {
+				} else if dist < distances[x-minX][y-minY] {
 					board[x-minX][y-minY] = rune(int(el.id) + 32)
-					lastDistance = dist
+					distances[x-minX][y-minY] = dist
+					// fmt.Println("Case 3", dist, distances[x-minX][y-minY])
 				}
+				// time.Sleep(750 * time.Millisecond)
 			}
+			fmt.Printf("Point %d, %d was set to %c\n", x, y, board[x-minX][y-minY])
 		}
+	}
+	for _, el := range board {
+		for _, i := range el {
+			fmt.Printf("%c", i)
+		}
+		fmt.Println("")
 	}
 	maxMap := map[rune]int{}
 	for _, el := range board {
@@ -107,4 +126,10 @@ func positiveDistance(x1, x2 int) int {
 	} else {
 		return dist
 	}
+}
+
+func clear() {
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
 }
